@@ -1,6 +1,6 @@
 Info3: <<
 Package: llvm60
-Version: 6.0.0
+Version: 6.0.1
 Revision: 1
 Description: Modular and reusable compiler
 License: BSD
@@ -31,21 +31,21 @@ BuildConflicts: <<
 <<
 
 Source: http://llvm.org/releases/%v/llvm-%v.src.tar.xz
-Source-MD5: 788a11a35fa62eb008019b37187d09d2
+Source-MD5: c88c98709300ce2c285391f387fecce0
 Source2: http://llvm.org/releases/%v/cfe-%v.src.tar.xz
-Source2-MD5: 121b3896cb0c7765d690acc5d9495d24
+Source2-MD5: 4e419bd4e3b55aa06d872320f754bd85
 Source3: http://llvm.org/releases/%v/compiler-rt-%v.src.tar.xz
-Source3-MD5: ba6368e894b5528e527d86a69d8533c6
+Source3-MD5: 99bf8bcb68ba96dda74f6aee6c55f639
 Source4: http://llvm.org/releases/%v/polly-%v.src.tar.xz
-Source4-MD5: e5808a3a1ed1c23f56dd1854b86689d0
+Source4-MD5: 4e5937753d1f77e2c0feca485fc7f9da
 Source5: http://llvm.org/releases/%v/libcxx-%v.src.tar.xz
-Source5-MD5: 4ecad7dfd8ea636205d3ffef028df73a
+Source5-MD5: 2c13cd0136ab6f8060a4cde85b5f86e2
 Source6: http://llvm.org/releases/%v/openmp-%v.src.tar.xz
-Source6-MD5: eb6b8d0318a950a8192933a3b500585d
+Source6-MD5: 4826402ae3633c36c51ba4d0e5527d30
 Source7: http://llvm.org/releases/%v/clang-tools-extra-%v.src.tar.xz
-Source7-MD5: 6b1d543116dab5a3caba10091d983743
+Source7-MD5: 431cba2b652e9c227a59a6d681388160
 # Source8: http://llvm.org/releases/%v/test-suite-%v.src.tar.xz
-# Source8-MD5: 
+# Source8-MD5: fbd4f0501cb4cc259215e1d5659c4fdd
 # libcxxabi is not needed, use system's libc++abi or libsupc++
 
 SourceDirectory: llvm-%v.src
@@ -507,7 +507,8 @@ EOF
 	popd
 	echo "Stage 1.5 Tests were not run." > ../build/stage1.5/libcxx-$version-check.log
 	echo "######## END of BOOTSTRAP STAGE 1.5: built libc++ with stage 1 clang++"
-	libcxx_stage_dir=$build_root/last-libcxx/lib
+        # $libcxx_stage_dir in build dir not used and creating loads of warnings
+	#libcxx_stage_dir=$build_root/last-libcxx/lib
 
 	# don't bootstrap on powerpc-darwinX until all codegen issues fixed
 #	If you do not wish to bootstrap, change the following value to 0:
@@ -530,7 +531,7 @@ then
 	stage23_isystem_flags="-cxx-isystem $libcxx_srcdir -cxx-isystem %b/../build/last/lib/clang/%v/include -cxx-isystem /usr/include"
 	stage23_cxx_flags="-std=c++11 -stdlib=libc++ $stage23_isystem_flags"
 	# reuse CC and CXX from stage 1.5
-	STAGE2_LLVM_LDFLAGS=( "-L$libcxx_stage_dir" )
+	#STAGE2_LLVM_LDFLAGS=( "-L$libcxx_stage_dir" )
 	STAGE2_CMAKE_OPTIONS=( -DLIBOMP_CFLAGS="$stage23_isystem_flags" \
 		-DCMAKE_CXX_FLAGS="$stage23_cxx_flags $int_as_flag ${STAGE2_LLVM_LDFLAGS[@]}" )
 	mkdir -p ../build/stage2
