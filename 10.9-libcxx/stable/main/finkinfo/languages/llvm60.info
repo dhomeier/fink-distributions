@@ -7,9 +7,9 @@ License: BSD
 Maintainer: David Fang <fangism@users.sourceforge.net>
 
 BuildDepends: <<
-	fink (>= 0.32), 
+	fink (>= 0.32),
 # for xz
-	cmake (>= 2.8.10.2-1), 
+	cmake (>= 2.8.10.2-1),
 	# on darwin11+, for libc++ needs xcode >= 4.6
 	xcode (>= 7.2.1),
 # ccache is optional, for accelerating rebuilds
@@ -55,7 +55,7 @@ UseMaxBuildJobs: true
 PatchFile: %n.patch
 PatchFile-MD5: 0cdaa229d5872fa50a40ab3945d949d8
 #PatchFile2: %n-clang.patch
-#PatchFile2-MD5: 25a45c5.0e14611b278c30b782f0d7e5 
+#PatchFile2-MD5: 25a45c5.0e14611b278c30b782f0d7e5
 #PatchFile3: %n-compiler-rt.patch
 #PatchFile3-MD5: 60ed1415e15b1781f2d58c0db17aab78
 #PatchFile4: %n-polly.patch
@@ -63,7 +63,7 @@ PatchFile-MD5: 0cdaa229d5872fa50a40ab3945d949d8
 #PatchFile5: %n-libcxx.patch
 #PatchFile5-MD5: 583ca4f6ad00b503bc5.0c8af02b187b
 #PatchFile6: %n-clang-omp.patch
-#PatchFile6-MD5: 8067f4cc1f58030f7746521d58c776c2 
+#PatchFile6-MD5: 8067f4cc1f58030f7746521d58c776c2
 PatchFile7: %n-clang-iomp5.patch
 PatchFile7-MD5: eab1394d4ae94c343dba81cd904168a8
 
@@ -194,7 +194,7 @@ if ($1 == "cmd.append(exec_path)") {
 
 	#pushd ../openmp-%v.src
 	#popd
-	
+
 # needed for gcc-fsf-4.x only
 #	sed -i.orig2 -e 's|compatibility_version|dylib_&|' tools/clang/tools/libclang/CMakeLists.txt
 
@@ -412,7 +412,7 @@ EOF
 	pushd ../build/stage1
 	echo "LLVM_CMAKE_OPTIONS = ${COMMON_CMAKE_OPTIONS[@]} ${LLVM_CMAKE_OPTIONS[@]} ${STAGE1_CMAKE_OPTIONS[@]}"
 	# Technically, we only need the native back-end in stage 1...
-	cmake "${COMMON_CMAKE_OPTIONS[@]}" "${LLVM_CMAKE_OPTIONS[@]}" "${STAGE1_CMAKE_OPTIONS[@]}" $relsrcdir 
+	cmake "${COMMON_CMAKE_OPTIONS[@]}" "${LLVM_CMAKE_OPTIONS[@]}" "${STAGE1_CMAKE_OPTIONS[@]}" $relsrcdir
 	# kill -DNDEBUG with fire
 	sed -i.orig -e 's| -DNDEBUG||g' CMakeCache.txt
 	# fix_llvm_config_build_variables # not needed b/c not using libc++ yet
@@ -903,9 +903,9 @@ InfoTest: <<
 #	allow  tests to find c++ headers
 	sed -i -e 's|config.cxx_mode_flags = \[\"--driver-mode=g++\"\]|config.cxx_mode_flags = \[\"--driver-mode=g++\", \"-I%b/../build/last-libcxx/include/c\+\+/v1\", \"-Wl,-rpath,%b/../build/last-libcxx/lib\"\]|g' %b/projects/compiler-rt/test/lit.common.cfg	
 #	hack around libLTO.dylib loading under SIP
-	install_name_tool -id %b/../build/last/lib/libLTO.dylib %b/../build/last/lib/libLTO.dylib 
-	install_name_tool -change @rpath/libLLVM.dylib %b/../build/last/lib/libLLVM.dylib %b/../build/last/lib/libLTO.dylib 
-	install_name_tool -change @rpath/libc++.1.dylib %b/../build/last-libcxx/lib//libc++.1.dylib %b/../build/last/lib/libLTO.dylib 
+	install_name_tool -id %b/../build/last/lib/libLTO.dylib %b/../build/last/lib/libLTO.dylib
+	install_name_tool -change @rpath/libLLVM.dylib %b/../build/last/lib/libLLVM.dylib %b/../build/last/lib/libLTO.dylib
+	install_name_tool -change @rpath/libc++.1.dylib %b/../build/last-libcxx/lib//libc++.1.dylib %b/../build/last/lib/libLTO.dylib
 	{ make -k TESTARGS=-v check-asan 2>&1 || : ;}| tee compiler-rt-%v-check.log
 	{ make -k TESTARGS=-v check-profile 2>&1 || : ;}| tee -a compiler-rt-%v-check.log
 	{ make -k TESTARGS=-v check-sanitizer 2>&1 || : ;}| tee -a compiler-rt-%v-check.log
@@ -913,8 +913,8 @@ InfoTest: <<
 	{ make -k TESTARGS=-v check-ubsan 2>&1 || : ;}| tee -a compiler-rt-%v-check.log
 	{ make -k TESTARGS=-v check-cfi-and-supported 2>&1 || : ;}| tee -a compiler-rt-%v-check.log
 	{ make -k TESTARGS=-v check-safestack 2>&1 || : ;}| tee -a compiler-rt-%v-check.log
-	install_name_tool -id @rpath/libLTO.dylib %b/../build/last/lib/libLTO.dylib 
-	install_name_tool -change %b/../build/last/lib/libLLVM.dylib @rpath/libLLVM.dylib %b/../build/last/lib/libLTO.dylib 
+	install_name_tool -id @rpath/libLTO.dylib %b/../build/last/lib/libLTO.dylib
+	install_name_tool -change %b/../build/last/lib/libLLVM.dylib @rpath/libLLVM.dylib %b/../build/last/lib/libLTO.dylib
 	install_name_tool -change  %b/../build/last-libcxx/lib//libc++.1.dylib @rpath/libc++.1.dylib %b/../build/last/lib/libLTO.dylib
 
 	echo "******** Running included polly tests ... ********"
@@ -1307,43 +1307,45 @@ SplitOff12: <<
 	DocFiles: ../libcxx-%v.src/*.TXT
 	DescPort: <<
 	This C++ library is always built using the system's C++ ABI library,
-	not libc++abi from the LLVM project.  
+	not libc++abi from the LLVM project.
 	The system ABI could be either libc++abi or libsupc++.
-	This allows for interoperability across different C++ libraries.  
+	This allows for interoperability across different C++ libraries.
 	<<
 	DescUsage: <<
 	libc++ lives in a private location, which requires opt-in to use.
 	To use libc++, you need to pass "-cxx-isystem %p/include/c++/v1"
-	and -L%p/lib/c++ to clang++.  
+	and -L%p/lib/c++ to clang++.
 	<<
 <<
 SplitOff13: <<
 	Package: libcxx1-dev
 	Description: Standard library headers for libc++
 	Depends: libcxx1-shlibs (= %v-%r)
+	Conflicts: llvm50 (<= 5.0.0-1)
 	BuildDependsOnly: true
 	Files: <<
 		include/c++
+		lib/c++/libc++*.a
 		lib/c++/libc++*.dylib
 		opt/llvm-6.0/share/doc/%N/testlogs/libcxx-%v-check.log
 	<<
 	DescPort: <<
 	This C++ library is always built using the system's C++ ABI library,
-	not libc++abi from the LLVM project.  
+	not libc++abi from the LLVM project.
 	The system ABI could be either libc++abi or libsupc++.
-	This allows for interoperability across different C++ libraries.  
+	This allows for interoperability across different C++ libraries.
 	<<
 	DescUsage: <<
 	libc++ lives in a private location, which requires opt-in to use.
 	To use libc++, you need to pass "-cxx-isystem %p/include/c++/v1"
-	and -L%p/lib/c++ to clang++.  
+	and -L%p/lib/c++ to clang++.
 	<<
 <<
 SplitOff14: <<
 	Package: libomp-shlibs
 	Description: Standard library for libomp
 	Files: <<
-		(%m != powerpc) lib//libomp/lib*omp*.dylib
+		(%m != powerpc) lib/libomp/lib*omp*.dylib
 	<<
 	DocFiles: <<
 		projects/openmp/CREDITS.txt
@@ -1395,14 +1397,14 @@ toolchain technologies.  Despite its name, LLVM has little to do with
 traditional virtual machines, though it does provide helpful libraries
 that can be used to build them.
 
-The goal of the Clang project is to create a new C, C++, Objective C 
+The goal of the Clang project is to create a new C, C++, Objective C
 and Objective C++ front-end for the LLVM compiler.
 
 Permission granted by Google to contribute packaging.
 <<
 DescPackaging: <<
 clang binaries now live in the clang60 split-off.
-The %N-bundle package installs the entire set except for -dev headers.  
+The %N-bundle package installs the entire set except for -dev headers.
 
 libc++ is installed with headers at %p/include/c++/v1
 and libraries in %p/lib/c++/, so opt to use them, pass to clang:
@@ -1415,11 +1417,11 @@ Built with shared-libraries to reduce the binary size and peak disk usage.
 Targets enabled in CompileScript: X86, PowerPC, ARM.
 
 The upstream build system now produces @rpath-linked libraries and binaries,
-however, the InstallScript "de-rpaths" the install_name ids to 
+however, the InstallScript "de-rpaths" the install_name ids to
 satisfy packaging requirements.  There is also an optional step of
 de-rpath-ing dylib *dependencies* that is controlled by the de_rpath_deps
 variable.  Binaries work either way, but de-rpathing dependencies
-closer resembles the packaging in earlier versions, llvm34.  
+closer resembles the packaging in earlier versions, llvm34.
 <<
 DescPort: <<
 Most of the patches are maintained at fangism's powerpc-darwin8 branches
@@ -1431,10 +1433,10 @@ The following did not change since 3.6.0:
 	https://github.com/fangism/libcxx/compare/release-3.6.0...powerpc-darwin8-rel-3.6.0.diff
 
 On darwin>9 and x86 architectures, the package build is done as a
-3-stage bootstrap (self-host), now including a built libc++.  
-Should stage 2 vs. 3 of bootstrap miscompare, a 4th stage is done, 
-and then compared against stage 3 (only expected on darwin10).  
-To accelerate testing, a user may also disable the bootstrap by 
+3-stage bootstrap (self-host), now including a built libc++.
+Should stage 2 vs. 3 of bootstrap miscompare, a 4th stage is done,
+and then compared against stage 3 (only expected on darwin10).
+To accelerate testing, a user may also disable the bootstrap by
 setting do_bootstrap=0 in the CompileScript.
 
 	*** LLVM/Clang-3.6 still has some codegen issues for PowerPC
@@ -1444,7 +1446,7 @@ setting do_bootstrap=0 in the CompileScript.
 	*** status page: http://www.csl.cornell.edu/~fang/sw/llvm/
 	*** IRC channel: #llvm-powerpc-darwin at irc.oftc.net
 
-Original (pre-3.0) package maintained by 
+Original (pre-3.0) package maintained by
 	Benjamin Reed <llvm@fink.raccoonfink.com>
 with contributions from
 	Jack Howarth <howarth@bromo.med.uc.edu>
