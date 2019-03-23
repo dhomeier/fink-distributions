@@ -2,6 +2,7 @@ Info3: <<
 Package: llvm60
 Version: 6.0.1
 Revision: 1
+Distribution: 10.9, 10.10, 10.11, 10.12, 10.13, 10.14
 Description: Modular and reusable compiler
 License: BSD
 Maintainer: David Fang <fangism@users.sourceforge.net>
@@ -232,6 +233,15 @@ CompileScript: <<
 	test "$enable_assertions" = OFF ||
 		sed -i.orig -e '/-DNDEBUG/s|.*|#&|' cmake/modules/HandleLLVMOptions.cmake
 
+	# darwin18 (10.14): extra cmake flags
+	if test $darwin_vers -ge 18; then
+		SDK_PATH=`dirname $(xcrun --sdk macosx --show-sdk-path)`/MacOSX10.14.sdk
+		osx_archs="x86_64"
+		osx_dept="$osx_version"
+	else
+		osx_archs="x86_64;i386"
+	fi
+
 	COMMON_CMAKE_OPTIONS=( -DLLVM_LINK_LLVM_DYLIB:BOOL=ON \
 		-DCOMPILER_RT_ENABLE_IOS:BOOL=OFF \
 		-DLLVM_ENABLE_FFI=ON \
@@ -242,12 +252,12 @@ CompileScript: <<
 	LLVM_CMAKE_OPTIONS=( -DLLVM_ENABLE_ASSERTIONS:BOOL=$enable_assertions )
 	# test "$darwin_vers" -ge 10 ||
 	LLVM_CMAKE_OPTIONS=( "${LLVM_CMAKE_OPTIONS[@]}" \
-		-DCMAKE_OSX_SYSROOT:STRING=/ \
-		-DCMAKE_OSX_DEPLOYMENT_TARGET:STRING= )
+		-DCMAKE_OSX_SYSROOT:STRING=${SDK_PATH:-/} \
+		-DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=$osx_dept )
 
-	# build fat libomp on x86_64 darwin
+	# build fat libomp on x86_64 darwin < 18
 	case "$build_arch" in
-	x86*) COMMON_CMAKE_OPTIONS=( "${COMMON_CMAKE_OPTIONS[@]}" -DLIBOMP_OSX_ARCHITECTURES="x86_64;i386" ) ;;
+	x86*) COMMON_CMAKE_OPTIONS=( "${COMMON_CMAKE_OPTIONS[@]}" -DLIBOMP_OSX_ARCHITECTURES="$osx_archs" ) ;;
 	esac
 
 	# always build the native archs' backends
@@ -482,9 +492,10 @@ EOF
 		LIBCXX_CMAKE_OPTIONS=( "${LIBCXX_CMAKE_OPTIONS[@]}" \
 			-DLIBCXX_CXX_ABI_INCLUDE_PATHS="$abi_includes" )
 	fi
-	# on x86 darwin10+, build FAT
-	if test $darwin_vers -ge 10
+	# on x86 darwin10-darwin17, build FAT
+	if test $darwin_vers -ge 10 && test $darwin_vers -le 17
 	then flags="$flags -arch i386 -arch x86_64"
+	else flags="$flags -arch x86_64"
 	fi
 	LIBCXX_CMAKE_OPTIONS=( "${LIBCXX_CMAKE_OPTIONS[@]}" \
 		-DCMAKE_INSTALL_PREFIX=$fink_root \
@@ -900,12 +911,12 @@ InfoTest: <<
 	echo "******** Running included clang-tools tests ... ********"
 	{ make -k TESTARGS=-v check-clang-tools 2>&1 || : ;} | tee clang-tools-%v-check.log
 
-#	allow  tests to find c++ headers
-	sed -i -e 's|config.cxx_mode_flags = \[\"--driver-mode=g++\"\]|config.cxx_mode_flags = \[\"--driver-mode=g++\", \"-I%b/../build/last-libcxx/include/c\+\+/v1\", \"-Wl,-rpath,%b/../build/last-libcxx/lib\"\]|g' %b/projects/compiler-rt/test/lit.common.cfg	
+#	allow  tests to find c++ headers - seems a bunch of the c++ headers are not (yet) installed under build/last-libcxx
+	sed -i -e 's|config.cxx_mode_flags = \[\"--driver-mode=g++\"\]|config.cxx_mode_flags = \[\"--driver-mode=g++\", \"-I%b/../build/last-libcxx/include/c\+\+/v1\", \"-I%b/../libcxx-%v.src/include\", \"-Wl,-rpath,%b/../build/last-libcxx/lib\"\]|g' %b/projects/compiler-rt/test/lit.common.cfg	
 #	hack around libLTO.dylib loading under SIP
 	install_name_tool -id %b/../build/last/lib/libLTO.dylib %b/../build/last/lib/libLTO.dylib
 	install_name_tool -change @rpath/libLLVM.dylib %b/../build/last/lib/libLLVM.dylib %b/../build/last/lib/libLTO.dylib
-	install_name_tool -change @rpath/libc++.1.dylib %b/../build/last-libcxx/lib//libc++.1.dylib %b/../build/last/lib/libLTO.dylib
+	install_name_tool -change @rpath/libc++.1.dylib %b/../build/last-libcxx/lib/libc++.1.dylib %b/../build/last/lib/libLTO.dylib
 	{ make -k TESTARGS=-v check-asan 2>&1 || : ;}| tee compiler-rt-%v-check.log
 	{ make -k TESTARGS=-v check-profile 2>&1 || : ;}| tee -a compiler-rt-%v-check.log
 	{ make -k TESTARGS=-v check-sanitizer 2>&1 || : ;}| tee -a compiler-rt-%v-check.log
@@ -1321,7 +1332,7 @@ SplitOff13: <<
 	Package: libcxx1-dev
 	Description: Standard library headers for libc++
 	Depends: libcxx1-shlibs (= %v-%r)
-	Conflicts: llvm50 (<= 5.0.0-1)
+	Replaces: llvm50 (<< 5.0.2-1)
 	BuildDependsOnly: true
 	Files: <<
 		include/c++
